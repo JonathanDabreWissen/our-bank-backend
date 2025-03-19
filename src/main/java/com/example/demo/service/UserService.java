@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.models.User;
@@ -25,14 +27,19 @@ public class UserService {
 		return repo.findById(id);
 	}
 	
-	public String insertUser(User u) {
-		if(repo.existsByEmail(u.getEmail())) {
-			return "The user already exists. Choose a different email id";
-		}
-		repo.save(u);
-		return "Successfully registered the User";
+	public ResponseEntity<Map<String, String>> insertUser(User u) {
+	    Map<String, String> response = new HashMap<>();
+	    
+	    if (repo.existsByEmail(u.getEmail())) {
+	        response.put("message", "The user already exists. Choose a different email id");
+	        return ResponseEntity.status(409).body(response);
+	    }
+
+	    repo.save(u);
+	    response.put("message", "Successfully registered the User");
+	    return ResponseEntity.status(200).body(response);
 	}
-	
+
 	public Map<String, String> loginUser(String email, String password) {
 		User user = repo.findByEmailAndPassword(email, password);
 		Map<String, String> response = new HashMap<>();
